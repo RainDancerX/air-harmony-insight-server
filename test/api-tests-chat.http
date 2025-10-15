@@ -1,0 +1,173 @@
+### Air Harmony Insight API - Chat Tests
+### This file contains test requests for the AI Chat functionality
+###
+### HOW TO USE:
+### 1. First run the "Login to get token" request below
+### 2. Copy the token from the response and update @token variable above
+### 3. Then run any chat message test
+
+### Variables
+@baseUrl = http://localhost:3001
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI4ODBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDEiLCJlbWFpbCI6ImFkbWluQGdyZWVudGVjaC5jb20iLCJyb2xlIjoiYWRtaW4iLCJzZXNzaW9uSWQiOiIwOTM3MTM5Mi0yYjAxLTQ0ZmQtODYxMy02ZTdkZWQ1OGQ3YzMiLCJpYXQiOjE3NTM5MjY4MzQsImV4cCI6MTc1NDAxMzIzNH0.CBw9sZB2k4DDPt7m8pVnnOZgj_S1Yw6BTqrBSHQ-UO0
+@buildingId = 550e8400-e29b-41d4-a716-446655440000
+@conversationId = a5433be6-901a-4647-be6d-a0b003cf6ca1
+
+### =============================================================================
+### Authentication (Get token first)
+### =============================================================================
+
+### Login to get token
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@greentech.com",
+  "password": "password123"
+}
+
+### =============================================================================
+### Chat API Tests
+### =============================================================================
+
+### Send a simple message to start a new conversation
+POST {{baseUrl}}/api/chat/message
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "building_id": "{{buildingId}}",
+  "message": "Hello! What is the current air quality in the building?"
+}
+
+### Send a message with context (zone-specific) - WORKING VERSION
+POST {{baseUrl}}/api/chat/message
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "building_id": "{{buildingId}}",
+  "message": "What are the temperature readings in zone A?",
+  "context": {
+    "current_page": "zone_details"
+  }
+}
+
+### Send a message to an existing conversation - WORKING VERSION
+POST {{baseUrl}}/api/chat/message
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "building_id": "{{buildingId}}",
+  "message": "Can you adjust the ventilation in this zone?",
+  "conversation_id": "{{conversationId}}"
+}
+
+### Send a message about alerts - WORKING VERSION
+POST {{baseUrl}}/api/chat/message
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "building_id": "{{buildingId}}",
+  "message": "Explain the current alerts and how to resolve them",
+  "context": {
+    "current_page": "alerts"
+  }
+}
+
+### Ask for building analytics
+POST {{baseUrl}}/api/chat/message
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "building_id": "{{buildingId}}",
+  "message": "Give me a summary of the building's air quality trends over the past week"
+}
+
+### =============================================================================
+### Conversation Management
+### =============================================================================
+
+### Get all conversations for a building
+GET {{baseUrl}}/api/chat/conversations?building_id={{buildingId}}&limit=20
+Authorization: Bearer {{token}}
+
+### Get conversation history
+GET {{baseUrl}}/api/chat/conversations/{{conversationId}}/messages?limit=50
+Authorization: Bearer {{token}}
+
+### Clear a conversation
+DELETE {{baseUrl}}/api/chat/conversations/{{conversationId}}
+Authorization: Bearer {{token}}
+
+### =============================================================================
+### Test Error Cases
+### =============================================================================
+
+### Test missing building_id
+POST {{baseUrl}}/api/chat/message
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "message": "This should fail"
+}
+
+### Test empty message
+POST {{baseUrl}}/api/chat/message
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "building_id": "{{buildingId}}",
+  "message": ""
+}
+
+### Test unauthorized access
+POST {{baseUrl}}/api/chat/message
+Content-Type: application/json
+
+{
+  "building_id": "{{buildingId}}",
+  "message": "This should fail without token"
+}
+
+### Test invalid conversation ID
+GET {{baseUrl}}/api/chat/conversations/invalid-id/messages
+Authorization: Bearer {{token}}
+
+### =============================================================================
+### Sample AI Commands to Test Function Calling
+### =============================================================================
+
+### Test zone data retrieval - WORKING VERSION
+POST {{baseUrl}}/api/chat/message
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "building_id": "{{buildingId}}",
+  "message": "Get current sensor readings for all zones in the building"
+}
+
+### Test ventilation adjustment - WORKING VERSION
+POST {{baseUrl}}/api/chat/message
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "building_id": "{{buildingId}}",
+  "message": "How can I improve the ventilation in areas with poor air quality?"
+}
+
+### Test alert resolution - WORKING VERSION
+POST {{baseUrl}}/api/chat/message
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "building_id": "{{buildingId}}",
+  "message": "What steps should I take to resolve the current air quality alerts?"
+} 

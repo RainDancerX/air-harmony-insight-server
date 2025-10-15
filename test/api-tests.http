@@ -1,0 +1,459 @@
+# Air Harmony Insight API Tests
+# REST Client Extension for VS Code
+# Base URL: http://localhost:3001
+
+@baseUrl = http://localhost:3001
+@contentType = application/json
+
+# Variables will be set after login
+@adminToken = 
+@managerToken = 
+@viewerToken = 
+
+###############################################################################
+# HEALTH CHECK
+###############################################################################
+
+### Health Check (No Authentication Required)
+GET {{baseUrl}}/health
+
+###############################################################################
+# AUTHENTICATION TESTS
+###############################################################################
+
+### Login as Admin User
+# @name loginAdmin
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@greentech.com",
+  "password": "password123"
+}
+
+### Login as Manager User  
+# @name loginManager
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "manager@greentech.com",
+  "password": "password123"
+}
+
+### Login as Viewer User
+# @name loginViewer
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "viewer@greentech.com",
+  "password": "password123"
+}
+
+### Login with Invalid Credentials (Should Fail)
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "invalid@example.com",
+  "password": "wrongpassword"
+}
+
+### Get Current User Profile (Admin)
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Current User Profile (Manager)
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{loginManager.response.body.data.token}}
+
+### Get Current User Profile (Viewer)
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{loginViewer.response.body.data.token}}
+
+### Logout (Admin)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+###############################################################################
+# BUILDINGS API TESTS
+###############################################################################
+
+### Get All Buildings (Admin)
+GET {{baseUrl}}/api/buildings
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get All Buildings (Manager)
+GET {{baseUrl}}/api/buildings
+Authorization: Bearer {{loginManager.response.body.data.token}}
+
+### Get All Buildings (Viewer)
+GET {{baseUrl}}/api/buildings
+Authorization: Bearer {{loginViewer.response.body.data.token}}
+
+### Get All Buildings (No Auth - Should Fail)
+GET {{baseUrl}}/api/buildings
+
+### Get Specific Building by ID
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Building Overview/Analytics
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/overview
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Building Active Alerts
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/alerts
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Building Historical Data
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/history?period=24h&sensorType=PM2.5
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Submit Sensor Data (Admin)
+POST {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/sensor-data
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: {{contentType}}
+
+{
+  "sensor_id": "770e8400-e29b-41d4-a716-446655440001",
+  "value": 25.6,
+  "timestamp": "{{$datetime iso8601}}"
+}
+
+### Submit Sensor Data (Manager)
+POST {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/sensor-data
+Authorization: Bearer {{loginManager.response.body.data.token}}
+Content-Type: {{contentType}}
+
+{
+  "sensor_id": "770e8400-e29b-41d4-a716-446655440001",
+  "value": 25.6,
+  "timestamp": "{{$datetime iso8601}}"
+}
+
+### Submit Sensor Data (Viewer - Should Fail)
+POST {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/sensor-data
+Authorization: Bearer {{loginViewer.response.body.data.token}}
+Content-Type: {{contentType}}
+
+{
+  "sensor_id": "770e8400-e29b-41d4-a716-446655440001",
+  "value": 25.6,
+  "timestamp": "{{$datetime iso8601}}"
+}
+
+### Update Building Occupancy
+POST {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/occupancy
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: {{contentType}}
+
+{
+  "zone_id": "660e8400-e29b-41d4-a716-446655440001",
+  "occupancy_count": 15,
+  "detection_method": "sensor",
+  "timestamp": "{{$datetime iso8601}}"
+}
+
+###############################################################################
+# ZONES API TESTS
+###############################################################################
+
+### Get All Zones for Building
+GET {{baseUrl}}/api/zones/buildings/550e8400-e29b-41d4-a716-446655440000/zones
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Zones with Filters
+GET {{baseUrl}}/api/zones/buildings/550e8400-e29b-41d4-a716-446655440000/zones?floor=1&status=good&search=office
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Zone Details by ID
+GET {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/details
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Zone Details with History
+GET {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/details?period=24h
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Zone Historical Data
+GET {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/history?sensorType=PM2.5&period=24h&interval=1h
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Zone Historical Data (Multiple Sensors)
+GET {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/history?sensorType=PM2.5,CO2,Temperature&period=7d&interval=6h
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Send Zone Control Command (Admin Only)
+POST {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/controls
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: {{contentType}}
+
+{
+  "action": "increase_ventilation",
+  "parameters": {
+    "level": "high",
+    "duration": 30
+  }
+}
+
+### Send Zone Control Command (Manager)
+POST {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/controls
+Authorization: Bearer {{loginManager.response.body.data.token}}
+Content-Type: {{contentType}}
+
+{
+  "action": "adjust_temperature",
+  "parameters": {
+    "target": 22.5
+  }
+}
+
+### Send Zone Control Command (Viewer - Should Fail)
+POST {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/controls
+Authorization: Bearer {{loginViewer.response.body.data.token}}
+Content-Type: {{contentType}}
+
+{
+  "action": "increase_ventilation",
+  "parameters": {
+    "level": "medium"
+  }
+}
+
+### Get Zone Historical Data - TVOC (Alternative example)
+GET {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/history?sensorType=TVOC&period=24h&interval=1h
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+###############################################################################
+# SENSOR DATA TESTS
+###############################################################################
+
+### Get Sensor by ID
+GET {{baseUrl}}/api/sensors/660e8400-e29b-41d4-a716-446655440001
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Sensor Readings
+GET {{baseUrl}}/api/sensors/660e8400-e29b-41d4-a716-446655440001/readings?period=24h&interval=1h
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Sensor Current Reading
+GET {{baseUrl}}/api/sensors/660e8400-e29b-41d4-a716-446655440001/current
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Submit Bulk Sensor Data
+POST {{baseUrl}}/api/sensor-data/bulk
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: {{contentType}}
+
+{
+  "readings": [
+    {
+      "sensor_id": "660e8400-e29b-41d4-a716-446655440001",
+      "value": 12.5,
+      "timestamp": "{{$datetime iso8601}}",
+      "raw_value": 12.5,
+      "quality_score": 0.95
+    },
+    {
+      "sensor_id": "660e8400-e29b-41d4-a716-446655440002", 
+      "value": 450.2,
+      "timestamp": "{{$datetime iso8601}}",
+      "raw_value": 450.2,
+      "quality_score": 0.92
+    }
+  ]
+}
+
+###############################################################################
+# ALERTS API TESTS
+###############################################################################
+
+### Get Building Alerts (Working Endpoint)
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/alerts
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Building Alerts (Manager)
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/alerts
+Authorization: Bearer {{loginManager.response.body.data.token}}
+
+### Get Building Alerts (Viewer)
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/alerts
+Authorization: Bearer {{loginViewer.response.body.data.token}}
+
+### Note: Individual Alert Management Not Implemented
+### The following alert management endpoints are planned but not yet implemented:
+### - GET /api/alerts/{alertId}
+### - POST /api/alerts/{alertId}/acknowledge  
+### - POST /api/alerts/{alertId}/resolve
+### Use the building alerts endpoint above to view current alerts.
+
+###############################################################################
+# ANALYTICS & REPORTS
+###############################################################################
+
+### Get Building Analytics
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/analytics?period=7d
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Zone Comparison
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/zones/compare?metric=PM2.5&period=24h
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Generate AI Report
+POST {{baseUrl}}/api/reports/generate
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: {{contentType}}
+
+{
+  "building_id": "550e8400-e29b-41d4-a716-446655440000",
+  "report_type": "daily_summary",
+  "period": "24h"
+}
+
+### Get Recent Reports
+GET {{baseUrl}}/api/reports?building_id=550e8400-e29b-41d4-a716-446655440000&limit=10
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+###############################################################################
+# USER MANAGEMENT (Admin Only)
+###############################################################################
+
+### Get All Users (Admin Only)
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Create New User (Admin Only)
+POST {{baseUrl}}/api/users
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: {{contentType}}
+
+{
+  "email": "newuser@smarttech.com",
+  "name": "New Test User",
+  "role": "viewer",
+  "password": "tempPassword123"
+}
+
+### Update User (Admin Only)
+PUT {{baseUrl}}/api/users/880e8400-e29b-41d4-a716-446655440003
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Updated Viewer Name",
+  "role": "manager"
+}
+
+### Deactivate User (Admin Only)
+POST {{baseUrl}}/api/users/880e8400-e29b-41d4-a716-446655440003/deactivate
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+###############################################################################
+# SETTINGS & CONFIGURATION
+###############################################################################
+
+### Get System Configuration
+GET {{baseUrl}}/api/config
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Update System Configuration (Admin Only)
+PUT {{baseUrl}}/api/config
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: {{contentType}}
+
+{
+  "alert_thresholds": {
+    "PM2.5": {
+      "good": 12.0,
+      "moderate": 35.0,
+      "poor": 55.0,
+      "critical": 150.0
+    }
+  }
+}
+
+### Get User Notification Settings
+GET {{baseUrl}}/api/users/me/notifications
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Update User Notification Settings
+PUT {{baseUrl}}/api/users/me/notifications
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: {{contentType}}
+
+{
+  "email_alerts": true,
+  "sms_alerts": false,
+  "alert_frequency": "immediate",
+  "alert_severity": ["poor", "critical"]
+}
+
+###############################################################################
+# ERROR SCENARIOS
+###############################################################################
+
+### Test Invalid Building ID
+GET {{baseUrl}}/api/buildings/invalid-uuid
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Test Missing Authorization Header
+GET {{baseUrl}}/api/buildings
+
+### Test Invalid Authorization Token
+GET {{baseUrl}}/api/buildings
+Authorization: Bearer invalid.jwt.token
+
+### Test Malformed JSON
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@smarttech.com",
+  "password": "password123"
+  // Missing closing brace intentionally
+
+### Test Large Payload (Should be rejected)
+POST {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/sensor-data
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: {{contentType}}
+
+{
+  "sensor_id": "660e8400-e29b-41d4-a716-446655440001",
+  "value": 25.6,
+  "timestamp": "{{$datetime iso8601}}",
+  "large_data": "{{$randomString 1000000}}"
+}
+
+###############################################################################
+# PERFORMANCE TESTS
+###############################################################################
+
+### Concurrent Requests Test (Run multiple times)
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/dashboard
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Building Health Status Test (Alternative to pagination)
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/health
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Building Overview Test (Performance Test)
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/overview
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+###############################################################################
+# WEBSOCKET CONNECTION TEST
+###############################################################################
+# Note: WebSocket testing requires different tools, but you can test the auth token here
+
+### Test WebSocket Auth Token Validity
+POST {{baseUrl}}/api/auth/validate-token
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+###############################################################################
+# CLEANUP
+###############################################################################
+
+### Final Logout (Clean up session)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{loginAdmin.response.body.data.token}} 

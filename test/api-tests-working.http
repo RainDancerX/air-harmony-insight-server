@@ -1,0 +1,364 @@
+# Air Harmony Insight API - Working Endpoints Only
+# REST Client Extension for VS Code
+# Only includes endpoints that are actually implemented
+
+@baseUrl = http://localhost:3001
+
+###############################################################################
+# 1. HEALTH & API INFO
+###############################################################################
+
+### Health Check
+GET {{baseUrl}}/health
+
+### API Information
+GET {{baseUrl}}/api
+
+### API Status
+GET {{baseUrl}}/api/status
+
+###############################################################################
+# 2. AUTHENTICATION
+###############################################################################
+
+### Login as Admin
+# @name loginAdmin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@greentech.com",
+  "password": "password123"
+}
+
+### Login as Manager
+# @name loginManager
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "manager@greentech.com",
+  "password": "password123"
+}
+
+### Login as Viewer
+# @name loginViewer
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "viewer@greentech.com",
+  "password": "password123"
+}
+
+### Get Current User (Admin)
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Current User (Manager)
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{loginManager.response.body.data.token}}
+
+### Get Current User (Viewer)
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{loginViewer.response.body.data.token}}
+
+### Logout (Admin)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+###############################################################################
+# 3. BUILDINGS API - WORKING ENDPOINTS
+###############################################################################
+
+### Get All Buildings (Admin)
+GET {{baseUrl}}/api/buildings
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get All Buildings (Manager)
+GET {{baseUrl}}/api/buildings
+Authorization: Bearer {{loginManager.response.body.data.token}}
+
+### Get All Buildings (Viewer - Should Fail - Admin/Manager only)
+GET {{baseUrl}}/api/buildings
+Authorization: Bearer {{loginViewer.response.body.data.token}}
+
+### Get Specific Building by ID (Admin)
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Building Alerts (Admin)
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/alerts
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Building Overview (Admin)
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/overview
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Building Health Status (Admin)
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/health
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+###############################################################################
+# 4. SENSOR DATA SUBMISSION - WORKING WITH REAL SENSOR IDS
+###############################################################################
+
+### Submit PM2.5 Data - Main Lobby (Admin)
+POST {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/sensor-data
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "sensor_id": "770e8400-e29b-41d4-a716-446655440001",
+  "value": 25.6,
+  "timestamp": "{{$datetime iso8601}}"
+}
+
+### Submit CO2 Data - Main Lobby (Manager)
+POST {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/sensor-data
+Authorization: Bearer {{loginManager.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "sensor_id": "770e8400-e29b-41d4-a716-446655440002",
+  "value": 450.2,
+  "timestamp": "{{$datetime iso8601}}"
+}
+
+### Submit Temperature Data - Main Lobby (Admin)
+POST {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/sensor-data
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "sensor_id": "770e8400-e29b-41d4-a716-446655440004",
+  "value": 22.5,
+  "timestamp": "{{$datetime iso8601}}"
+}
+
+### Submit TVOC Data - Main Lobby (Manager)
+POST {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/sensor-data
+Authorization: Bearer {{loginManager.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "sensor_id": "770e8400-e29b-41d4-a716-446655440003",
+  "value": 0.8,
+  "timestamp": "{{$datetime iso8601}}"
+}
+
+### Submit PM2.5 Data - Open Office Space (Admin)
+POST {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/sensor-data
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "sensor_id": "770e8400-e29b-41d4-a716-446655440011",
+  "value": 18.3,
+  "timestamp": "{{$datetime iso8601}}"
+}
+
+### Submit CO2 Data - Open Office Space (Manager)
+POST {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/sensor-data
+Authorization: Bearer {{loginManager.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "sensor_id": "770e8400-e29b-41d4-a716-446655440012",
+  "value": 890.5,
+  "timestamp": "{{$datetime iso8601}}"
+}
+
+### Create New Building (Admin Only)
+POST {{baseUrl}}/api/buildings
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "name": "Test Building API",
+  "address": "123 API Test Street, Tech City",
+  "timezone": "America/New_York",
+  "temperature_unit": "celsius",
+  "contact_email": "admin@testbuilding.com",
+  "contact_phone": "+1-555-0123"
+}
+
+### Create Building (Manager - Should Fail, Admin Only)
+POST {{baseUrl}}/api/buildings
+Authorization: Bearer {{loginManager.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "name": "Should Fail Building",
+  "address": "Unauthorized Street"
+}
+
+###############################################################################
+# 5. ZONES API - WORKING ENDPOINTS
+###############################################################################
+
+### Get Zones for Building (Admin)
+GET {{baseUrl}}/api/zones/buildings/550e8400-e29b-41d4-a716-446655440000/zones
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Zones with Filters (Admin)
+GET {{baseUrl}}/api/zones/buildings/550e8400-e29b-41d4-a716-446655440000/zones?floor=1&search=office
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Specific Zone in Building (Admin)
+GET {{baseUrl}}/api/zones/buildings/550e8400-e29b-41d4-a716-446655440000/zones/660e8400-e29b-41d4-a716-446655440001
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Zone Details (Admin)
+GET {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/details
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Zone Historical Data - PM2.5 (Admin)
+GET {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/history?sensorType=PM2.5&period=24h&interval=1h
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Zone Historical Data - CO2 (Admin)
+GET {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/history?sensorType=CO2&period=7d&interval=1d
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Get Zone Historical Data - Temperature (Manager)
+GET {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/history?sensorType=Temperature&period=24h&interval=1h
+Authorization: Bearer {{loginManager.response.body.data.token}}
+
+### Send Zone Control Command - Increase Ventilation (Admin)
+POST {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/controls
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "action": "increase_ventilation",
+  "parameters": {
+    "level": "high",
+    "duration": 30
+  }
+}
+
+### Send Zone Control Command - Adjust Temperature (Manager)
+POST {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/controls
+Authorization: Bearer {{loginManager.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "action": "adjust_temperature",
+  "parameters": {
+    "target": 22.5
+  }
+}
+
+### Send Zone Control Command (Viewer - Should Fail)
+POST {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/controls
+Authorization: Bearer {{loginViewer.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "action": "increase_ventilation",
+  "parameters": {
+    "level": "medium"
+  }
+}
+
+### Create New Zone (Admin)
+POST {{baseUrl}}/api/zones
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "building_id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "Test Zone API",
+  "floor": 2,
+  "max_occupancy": 25,
+  "zone_type": "conference_room",
+  "area_sqm": 45.5
+}
+
+### Create New Zone (Manager)
+POST {{baseUrl}}/api/zones
+Authorization: Bearer {{loginManager.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "building_id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "Manager Created Zone",
+  "floor": 3,
+  "max_occupancy": 15,
+  "zone_type": "office"
+}
+
+###############################################################################
+# 6. ERROR SCENARIOS - TESTING AUTH & VALIDATION
+###############################################################################
+
+### Missing Authorization Header
+GET {{baseUrl}}/api/buildings
+
+### Invalid Authorization Token
+GET {{baseUrl}}/api/buildings
+Authorization: Bearer invalid.jwt.token
+
+### Invalid Building ID
+GET {{baseUrl}}/api/buildings/invalid-uuid
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Invalid Zone ID
+GET {{baseUrl}}/api/zones/invalid-uuid/details
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Missing Sensor Data Fields
+POST {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/sensor-data
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "timestamp": "{{$datetime iso8601}}"
+}
+
+### Invalid Sensor ID (This was your original error)
+POST {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/sensor-data
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "sensor_id": "invalid-sensor-id",
+  "value": 25.0,
+  "timestamp": "{{$datetime iso8601}}"
+}
+
+### Invalid Control Action
+POST {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/controls
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "action": "invalid_action",
+  "parameters": {}
+}
+
+### Missing Zone Data for Creation
+POST {{baseUrl}}/api/zones
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "name": "Incomplete Zone"
+}
+
+###############################################################################
+# 7. LOGOUT & CLEANUP
+###############################################################################
+
+### Logout Admin
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{loginAdmin.response.body.data.token}}
+
+### Logout Manager
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{loginManager.response.body.data.token}}
+
+### Logout Viewer
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{loginViewer.response.body.data.token}} 

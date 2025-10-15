@@ -1,3 +1,9 @@
+/*
+ * @Author: Lucas Liu lantasy.io@gmail.com
+ * @Date: 2025-05-30 12:13:13
+ * @LastEditTime: 2025-07-23 00:37:22
+ * @Description:
+ */
 import { Request, Response, NextFunction } from 'express';
 
 export interface CustomError extends Error {

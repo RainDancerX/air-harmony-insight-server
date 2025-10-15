@@ -1,0 +1,81 @@
+# Air Harmony Insight API - Quick Tests
+# REST Client Extension for VS Code
+# Quick starter with essential endpoints
+
+@baseUrl = http://localhost:3001
+
+###############################################################################
+# 1. HEALTH CHECK
+###############################################################################
+
+### Health Check
+GET {{baseUrl}}/health
+
+###############################################################################
+# 2. AUTHENTICATION
+###############################################################################
+
+### Login as Admin
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@greentech.com",
+  "password": "password123"
+}
+
+### Get Current User
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{login.response.body.data.token}}
+
+###############################################################################
+# 3. BUILDINGS API
+###############################################################################
+
+### Get All Buildings
+GET {{baseUrl}}/api/buildings
+Authorization: Bearer {{login.response.body.data.token}}
+
+### Get Building Overview (Use real Building ID from above response)
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/overview
+Authorization: Bearer {{login.response.body.data.token}}
+
+### Submit Sensor Data - PM2.5 in Main Lobby
+POST {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/sensor-data
+Authorization: Bearer {{login.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "sensor_id": "770e8400-e29b-41d4-a716-446655440001",
+  "value": 25.6,
+  "timestamp": "{{$datetime iso8601}}"
+}
+
+###############################################################################
+# 4. ZONES API  
+###############################################################################
+
+### Get Zones for Building
+GET {{baseUrl}}/api/zones/buildings/550e8400-e29b-41d4-a716-446655440000/zones
+Authorization: Bearer {{login.response.body.data.token}}
+
+### Get Zone Details
+GET {{baseUrl}}/api/zones/660e8400-e29b-41d4-a716-446655440001/details
+Authorization: Bearer {{login.response.body.data.token}}
+
+###############################################################################
+# 5. ALERTS
+###############################################################################
+
+### Get Building Alerts
+GET {{baseUrl}}/api/buildings/550e8400-e29b-41d4-a716-446655440000/alerts
+Authorization: Bearer {{login.response.body.data.token}}
+
+###############################################################################
+# 6. LOGOUT
+###############################################################################
+
+### Logout
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{login.response.body.data.token}} 
